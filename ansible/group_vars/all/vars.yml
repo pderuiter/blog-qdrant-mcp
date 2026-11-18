@@ -1,0 +1,8 @@
+---
+# Values from the post. Secrets live in vault.yml (see vault.yml.example).
+qdrant_api_key: "{{ vault_qdrant_api_key }}"
+
+# How Claude Code reaches Qdrant: your Traefik/TLS front end, as in the post.
+mcp_client_qdrant_url: https://qdrant.example.com:443
+mcp_client_collection_name: architectural-decisions
+mcp_client_embedding_model: sentence-transformers/all-MiniLM-L6-v2

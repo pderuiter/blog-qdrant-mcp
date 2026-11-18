@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+{% set bind = (qdrant_bind_address ~ ':') if qdrant_bind_address | length > 0 else '' %}
+services:
+  qdrant:
+    image: {{ qdrant_image }}
+    container_name: {{ qdrant_container_name }}
+    restart: always
+    ports:
+      - "{{ bind }}{{ qdrant_http_port }}:6333"   # REST API
+      - "{{ bind }}{{ qdrant_grpc_port }}:6334"   # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__API_KEY={{ qdrant_api_key }}
+      - QDRANT__SERVICE__ENABLE_TLS=false
+
+volumes:
+  qdrant_data:

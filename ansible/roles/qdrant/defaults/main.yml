@@ -1,0 +1,11 @@
+---
+qdrant_dir: /opt/qdrant
+# The post uses qdrant/qdrant:latest; pinned here to the release this repo was tested with.
+qdrant_image: qdrant/qdrant:v1.20.2
+qdrant_container_name: qdrant
+qdrant_http_port: 6333
+qdrant_grpc_port: 6334
+# Host address the ports are published on. The post publishes on all interfaces;
+# use 127.0.0.1 when only a local reverse proxy (Traefik) should reach Qdrant.
+qdrant_bind_address: ""
+qdrant_api_key: ""

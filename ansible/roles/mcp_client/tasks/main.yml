@@ -1,0 +1,56 @@
+---
+- name: Read the current MCP server entry
+  ansible.builtin.command:
+    argv: ["{{ mcp_client_claude_bin }}", mcp, get, "{{ mcp_client_name }}"]
+    chdir: "{{ mcp_client_project_dir }}"
+  environment: "{{ {'HOME': mcp_client_home} if mcp_client_home | length > 0 else {} }}"
+  register: mcp_client_current
+  changed_when: false
+  failed_when: false
+  no_log: true
+
+- name: Decide whether the entry needs to be (re)written
+  ansible.builtin.set_fact:
+    mcp_client_update: >-
+      {{ mcp_client_current.rc != 0
+         or ('QDRANT_URL=' ~ mcp_client_qdrant_url) not in mcp_client_current.stdout
+         or ('COLLECTION_NAME=' ~ mcp_client_collection_name) not in mcp_client_current.stdout
+         or ('EMBEDDING_MODEL=' ~ mcp_client_embedding_model) not in mcp_client_current.stdout
+         or ('QDRANT_API_KEY=' ~ mcp_client_qdrant_api_key) not in mcp_client_current.stdout }}
+  no_log: true
+
+- name: Remove the outdated entry
+  ansible.builtin.command:
+    argv: ["{{ mcp_client_claude_bin }}", mcp, remove, "{{ mcp_client_name }}", --scope, "{{ mcp_client_scope }}"]
+    chdir: "{{ mcp_client_project_dir }}"
+  environment: "{{ {'HOME': mcp_client_home} if mcp_client_home | length > 0 else {} }}"
+  when: mcp_client_update and mcp_client_current.rc == 0
+  changed_when: true
+
+- name: Register the Qdrant MCP server
+  ansible.builtin.command:
+    argv:
+      - "{{ mcp_client_claude_bin }}"
+      - mcp
+      - add
+      - "{{ mcp_client_name }}"
+      - --scope
+      - "{{ mcp_client_scope }}"
+      - --transport
+      - stdio
+      - -e
+      - "QDRANT_URL={{ mcp_client_qdrant_url }}"
+      - -e
+      - "QDRANT_API_KEY={{ mcp_client_qdrant_api_key }}"
+      - -e
+      - "COLLECTION_NAME={{ mcp_client_collection_name }}"
+      - -e
+      - "EMBEDDING_MODEL={{ mcp_client_embedding_model }}"
+      - --
+      - uvx
+      - mcp-server-qdrant
+    chdir: "{{ mcp_client_project_dir }}"
+  environment: "{{ {'HOME': mcp_client_home} if mcp_client_home | length > 0 else {} }}"
+  when: mcp_client_update
+  changed_when: true
+  no_log: true

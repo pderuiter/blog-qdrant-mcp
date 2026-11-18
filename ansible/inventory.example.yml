@@ -1,0 +1,17 @@
+---
+# Copy to inventory.yml, or generate it: terraform -chdir=../terraform output -raw ansible_inventory > inventory.yml
+all:
+  vars:
+    ansible_user: ubuntu
+  children:
+    qdrant:
+      hosts:
+        qdrant01:
+          ansible_host: 192.0.2.33
+    # Optional: the machine you run Claude Code on. The mcp_client role registers
+    # the Qdrant MCP server there with `claude mcp add`.
+    workstation:
+      hosts:
+        localhost:
+          ansible_connection: local
+          ansible_become: false

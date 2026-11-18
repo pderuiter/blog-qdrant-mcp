@@ -1,0 +1,13 @@
+---
+- name: Qdrant on Docker
+  hosts: qdrant
+  roles:
+    - role: docker_engine
+    - role: qdrant
+
+- name: Register the Qdrant MCP server with Claude Code
+  hosts: workstation
+  become: false
+  gather_facts: false
+  roles:
+    - role: mcp_client

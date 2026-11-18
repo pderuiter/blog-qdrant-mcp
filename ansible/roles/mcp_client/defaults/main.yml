@@ -1,0 +1,13 @@
+---
+# Registers mcp-server-qdrant with Claude Code (`claude mcp add`), as in the post.
+mcp_client_name: qdrant-memory
+# local, user or project (project writes .mcp.json in mcp_client_project_dir).
+mcp_client_scope: user
+mcp_client_project_dir: "{{ lookup('ansible.builtin.env', 'PWD') }}"
+mcp_client_claude_bin: claude
+mcp_client_qdrant_url: https://qdrant.example.com:443
+mcp_client_qdrant_api_key: "{{ qdrant_api_key }}"
+mcp_client_collection_name: architectural-decisions
+mcp_client_embedding_model: sentence-transformers/all-MiniLM-L6-v2
+# Override HOME for the claude CLI (empty = your own HOME).
+mcp_client_home: ""

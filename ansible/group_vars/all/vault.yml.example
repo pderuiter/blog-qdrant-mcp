@@ -1,0 +1,4 @@
+---
+# cp vault.yml.example vault.yml && ansible-vault encrypt vault.yml
+# Generate one with: openssl rand -hex 32
+vault_qdrant_api_key: your-secure-api-key-here
