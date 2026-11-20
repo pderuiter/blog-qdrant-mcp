@@ -6,6 +6,20 @@
     fail_msg: Set qdrant_api_key (vault_qdrant_api_key in vault.yml).
     quiet: true
 
+- name: Read the Traefik network
+  community.docker.docker_network_info:
+    name: "{{ qdrant_traefik_network }}"
+  register: qdrant_network
+
+- name: Check that the Traefik network exists
+  ansible.builtin.assert:
+    that:
+      - qdrant_network.exists
+    fail_msg: >-
+      Docker network {{ qdrant_traefik_network }} does not exist. Start Traefik first
+      (its Compose file creates the network), or set qdrant_traefik_network.
+    quiet: true
+
 - name: Create the project directory
   ansible.builtin.file:
     path: "{{ qdrant_dir }}"
@@ -28,9 +42,19 @@
     project_src: "{{ qdrant_dir }}"
     state: present
 
+# No published ports: check Qdrant on its address on the Traefik network.
+- name: Read the Qdrant container
+  community.docker.docker_container_info:
+    name: "{{ qdrant_container_name }}"
+  register: qdrant_container
+
+- name: Remember the Qdrant address on the Traefik network
+  ansible.builtin.set_fact:
+    qdrant_address: "{{ qdrant_container.container.NetworkSettings.Networks[qdrant_traefik_network].IPAddress }}"
+
 - name: Wait for the health check
   ansible.builtin.uri:
-    url: "http://127.0.0.1:{{ qdrant_http_port }}/healthz"
+    url: "http://{{ qdrant_address }}:6333/healthz"
     return_content: true
   register: qdrant_healthz
   retries: 20
@@ -39,5 +63,5 @@
 
 - name: Check that the API key is enforced
   ansible.builtin.uri:
-    url: "http://127.0.0.1:{{ qdrant_http_port }}/collections"
+    url: "http://{{ qdrant_address }}:6333/collections"
     status_code: 401
